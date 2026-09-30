@@ -8,8 +8,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--url",
         action="store",
-        default="https://www.saucedemo.com/",
-        help="Base URL of the shop under test.",
+        default="https://practice-automation.com/iframes/",
+        help="URL of the page under test.",
     )
     parser.addoption(
         "--browser",
@@ -21,11 +21,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
-    if "browser_name" not in metafunc.fixturenames:
+    if "driver" not in metafunc.fixturenames:
         return
 
     browsers = metafunc.config.getoption("--browser") or ["chrome", "firefox"]
-    metafunc.parametrize("browser_name", browsers, indirect=True, ids=browsers)
+    metafunc.parametrize("driver", browsers, indirect=True, ids=browsers)
 
 
 @pytest.fixture
@@ -34,21 +34,21 @@ def url(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def browser_name(request: pytest.FixtureRequest) -> str:
-    return request.param
+def saucedemo_url() -> str:
+    return "https://www.saucedemo.com/"
 
 
 @pytest.fixture
-def browser(browser_name: str):
-    drivers = {
+def driver(request: pytest.FixtureRequest):
+    driver_factories = {
         "chrome": webdriver.Chrome,
         "firefox": webdriver.Firefox,
         "edge": webdriver.Edge,
     }
-    driver = drivers[browser_name]()
-    driver.implicitly_wait(0)
+    browser_driver = driver_factories[request.param]()
+    browser_driver.implicitly_wait(0)
     try:
-        driver.maximize_window()
-        yield driver
+        browser_driver.maximize_window()
+        yield browser_driver
     finally:
-        driver.quit()
+        browser_driver.quit()
