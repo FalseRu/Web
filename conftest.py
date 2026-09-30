@@ -40,13 +40,15 @@ def browser_name(request: pytest.FixtureRequest) -> str:
 
 @pytest.fixture
 def browser(browser_name: str):
-    """Create a WebDriver instance and always close its browser after the test."""
     drivers = {
         "chrome": webdriver.Chrome,
         "firefox": webdriver.Firefox,
         "edge": webdriver.Edge,
     }
     driver = drivers[browser_name]()
-    driver.maximize_window()
-    yield driver
-    driver.quit()
+    driver.implicitly_wait(0)
+    try:
+        driver.maximize_window()
+        yield driver
+    finally:
+        driver.quit()
